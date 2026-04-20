@@ -4,3 +4,4 @@ numpy
 pydantic>=2.0
 duckduckgo-search
 pandas
+pypdf

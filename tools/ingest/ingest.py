@@ -150,7 +150,22 @@ def ingest_docs(params: IngestDocsInput) -> IngestDocsOutput:
             file_reports.append(IngestedFileInfo(source=name, chunks_added=0, skipped=True))
             continue
 
-        raw = p.read_text(encoding="utf-8", errors="replace")
+        raw = ""
+        if p.suffix.lower() == ".pdf":
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(p)
+                pages_text = []
+                for page in reader.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        pages_text.append(extracted)
+                raw = "\n".join(pages_text)
+            except ImportError:
+                raise ImportError("pypdf is required to ingest PDF files. Please install it using: pip install pypdf")
+        else:
+            raw = p.read_text(encoding="utf-8", errors="replace")
+            
         count = 0
 
         for chunk_text, offset in _chunk_text(raw):

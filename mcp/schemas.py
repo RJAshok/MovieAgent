@@ -88,8 +88,8 @@ class IngestDocsInput(BaseModel):
     file_paths: list[str] = Field(
         ...,
         min_length=1,
-        description="List of absolute or relative paths to .txt files to ingest.",
-        examples=[["blade_runner_2049_review.txt", "oppenheimer_review.txt"]],
+        description="List of absolute or relative paths to .txt or .pdf files to ingest.",
+        examples=[["blade_runner_2049_review.txt", "oppenheimer_review.pdf"]],
     )
 
 
@@ -157,7 +157,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
     "ingest_docs": _mcp_tool_def(
         name="ingest_docs",
         description=(
-            "Ingest one or more plain-text movie-review files into the FAISS "
+            "Ingest one or more plain-text (.txt) or PDF (.pdf) movie-review files into the FAISS "
             "vector store. Files are chunked, embedded, and indexed for later "
             "semantic search via the search_docs tool."
         ),
