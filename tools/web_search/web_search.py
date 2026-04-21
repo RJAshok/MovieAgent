@@ -1,9 +1,10 @@
+import os
 from typing import List, Dict, Any
-from duckduckgo_search import DDGS
+from tavily import TavilyClient
 
 def web_search(query: str) -> List[Dict[str, Any]]:
     """
-    Perform a live web search using DuckDuckGo to fetch recent or real-world information.
+    Perform a live web search using Tavily API to fetch recent or real-world information.
     
     WHEN TO USE:
     - Use this tool to find current events, recent news, or information that is not present in local datasets.
@@ -17,23 +18,36 @@ def web_search(query: str) -> List[Dict[str, Any]]:
     Returns the top 3 search results.
     """
     if not query or not query.strip():
-        return [{"error": "Empty query provided."}]
+        return []
         
     try:
-        ddgs = DDGS()
-        results = ddgs.text(query.strip(), max_results=3)
+        api_key = os.environ.get("TAVILY_API_KEY")
+        if not api_key:
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                api_key = os.environ.get("TAVILY_API_KEY")
+            except ImportError:
+                pass
+                
+        if not api_key:
+            return [{"error": "TAVILY_API_KEY environment variable is not set."}]
+            
+        client = TavilyClient(api_key=api_key)
+        response = client.search(query=query.strip(), max_results=3)
         
+        results = response.get("results", [])
         if not results:
             return []
             
         formatted_results = []
         for r in results:
             formatted_results.append({
-                "snippet": r.get("body", ""),
-                "url": r.get("href", ""),
-                "date": "N/A"  # DDG text search doesn't consistently provide publish date
+                "snippet": r.get("content", ""),
+                "url": r.get("url", ""),
+                "date": r.get("published_date", "N/A")
             })
             
         return formatted_results
     except Exception as e:
-        return [{"error": f"Search API error: {str(e)}"}]
+        return [{"error": str(e)}]
