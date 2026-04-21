@@ -37,3 +37,28 @@ Located at `tools/search_docs/search_docs.py`.
   - Pydantic models validate input queries to ensure standardized inputs.
   - Pydantic models structure outputs returning `source` filename, logical `page` number, similarity `score`, and raw `text`.
   - Implements global lazy-loading to cache the embedding model and FAISS vector indices on first call for extremely rapid subsequent queries.
+
+### 3. `query_data` (Structured Data Query)
+Located at `tools/query_data/query_data.py`.
+- **Purpose**: Executes SQL queries against a structured SQLite database and CSV files loaded into memory.
+- **Features**:
+  - Handles numerical, tabular, and analytical queries (e.g., box office revenue, budgets).
+  - Automatically loads and integrates data from `.csv` files inside the dataset folder into an in-memory database.
+  - Built-in safety mechanisms to detect natural language and block write operations (INSERT, UPDATE, DELETE).
+
+### 4. `web_search` (Live Web Search)
+Located at `tools/web_search/web_search.py`.
+- **Purpose**: Uses the Tavily API to search the web for current events and information not present in the local datasets.
+- **Features**:
+  - Requires a `TAVILY_API_KEY` environment variable.
+  - Returns a structured list containing text snippets, URLs, and publication dates for the top search results.
+
+## Testing
+
+### `test_all_tools.py`
+Located at `scripts/test_all_tools.py`.
+- **Purpose**: A comprehensive testing suite for all agent tools.
+- **Features**:
+  - Prepares the environment by automatically loading unstructured text into FAISS and structured data into the database.
+  - Runs a variety of scenarios (e.g., semantic queries, SQL aggregations, live API checks, invalid/unsafe inputs) to ensure each tool behaves as expected.
+  - Outputs a summary of passed/failed tests along with average tool latencies.
