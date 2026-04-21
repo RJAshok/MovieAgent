@@ -1,2 +1,4 @@
 __pycache__/
 faiss_store/
+dataset/
+.env
