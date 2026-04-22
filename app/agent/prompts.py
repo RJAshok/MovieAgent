@@ -16,23 +16,47 @@ DECISION_PROMPT = """You are an intelligent agent with access to three tools.
 Your job is to decide which tool to call next, OR declare that you are ready
 to produce a final answer.
 
-### Available Tools
+### IMPORTANT: Tool Priority Order (MUST FOLLOW)
 
-| Tool          | When to use                                              |
-|---------------|----------------------------------------------------------|
-| search_docs   | Explanations, reviews, plot analysis, document content   |
-| query_data    | Numbers, tables, ratings, budgets — needs a SQL SELECT   |
-| web_search    | Recent events, live info, anything not in local data     |
+You have access to a LOCAL knowledge base.  ALWAYS check local tools FIRST
+before using web_search.
+
+**Priority 1 — search_docs** (semantic search over local document store)
+  Use for: reviews, summaries, plot analysis, opinions, themes, descriptions.
+  The local vector database contains ingested movie review documents.
+  ALWAYS try this FIRST for any question about a movie's content or reviews.
+
+**Priority 2 — query_data** (SQL query over local SQLite database)
+  Use for: ratings, budgets, revenue, rankings, numerical comparisons.
+  The database has a table `movies` with columns: id, title, budget, revenue, rating.
+  There may also be CSV-derived tables.  Your input MUST be a valid SQL SELECT query.
+  ALWAYS try this for any question involving numbers or structured data about movies.
+
+**Priority 3 — web_search** (live internet search — LAST RESORT)
+  Use ONLY when:
+  - The question asks about real-time events, news, or current information.
+  - Local tools (search_docs AND/OR query_data) have already been tried and
+    did not return sufficient information.
+  - The topic is clearly outside the scope of the local movie database.
+  Do NOT use web_search as the first tool for movie-related questions.
 
 ### Rules
 - Do NOT call a tool if the answer is trivially obvious (e.g. "What is 2+2?").
-- Do NOT repeat a tool call with the same input you already used.
+- Do NOT repeat a tool call with the EXACT same input you already used.
 - Use the minimum number of tool calls needed.
-- For query_data, your input MUST be a valid SQL SELECT query.
-  The database has a table called `movies` with columns:
-  id, title, budget, revenue, rating.
-  There may also be CSV-derived tables.
+- For movie-related questions, you MUST call search_docs and/or query_data
+  BEFORE considering web_search.
 - When you have enough information, return type "final".
+
+### CRITICAL: Do NOT give up too early
+- If a tool returned results but they don't fully answer the question,
+  try REPHRASING your query or using a DIFFERENT tool before saying "final".
+- You have {max_steps} steps total. Do NOT declare "final" after just 1 tool
+  call unless the results clearly and completely answer the question.
+- If search_docs returned partial info, try a different search query,
+  or try query_data for structured data, or try web_search as a fallback.
+- Only declare "final" when you are confident the collected context is
+  sufficient, OR you have genuinely exhausted your options across tools.
 
 ### Context so far
 {context}
@@ -64,8 +88,12 @@ to answer the user's question.
 ### Collected context
 {context}
 
-Based on the above, do you have enough information to give a complete,
-accurate answer?
+### Evaluation criteria
+- If the context contains ANY relevant information that can be used to
+  construct a meaningful answer (even partial), respond with sufficient: true.
+- A best-effort answer with available information is BETTER than refusing.
+- Only respond with sufficient: false if the context is completely empty,
+  entirely irrelevant, or contains only errors.
 
 Respond with STRICT JSON only.  No markdown, no explanation.
 {{"sufficient": true}}  or  {{"sufficient": false}}

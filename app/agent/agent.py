@@ -150,21 +150,74 @@ def run_agent(question: str) -> str:
             # Unrecognised decision type — treat as final
             break
 
-    # ── Sufficiency check ───────────────────────────────────────────────
-    suff_prompt = SUFFICIENCY_PROMPT.format(
-        question=question,
-        context=json.dumps(context, indent=2, default=str) if context else "No context collected.",
-    )
+    # ── Sufficiency check (with retry if steps remain) ────────────────────
+    sufficiency_retries = 0
+    max_sufficiency_retries = 2  # allow up to 2 rounds of "go back and gather more"
 
-    try:
-        suff_result = ask_llm(suff_prompt)
-    except ValueError:
-        suff_result = {"sufficient": False}
+    while True:
+        suff_prompt = SUFFICIENCY_PROMPT.format(
+            question=question,
+            context=json.dumps(context, indent=2, default=str) if context else "No context collected.",
+        )
 
-    if not suff_result.get("sufficient", False):
-        refusal = "I do not have enough information to answer this question."
-        _print_trace(question, context, refusal)
-        return refusal
+        try:
+            suff_result = ask_llm(suff_prompt)
+        except ValueError:
+            suff_result = {"sufficient": False}
+
+        if suff_result.get("sufficient", False):
+            break  # enough info — proceed to answer
+
+        # Not sufficient — can we gather more?
+        if step >= MAX_STEPS or sufficiency_retries >= max_sufficiency_retries:
+            # Exhausted steps or retries — refuse
+            refusal = "I do not have enough information to answer this question."
+            _print_trace(question, context, refusal)
+            return refusal
+
+        # Still have steps — go back and gather more context
+        sufficiency_retries += 1
+        context.append({
+            "step": "hint",
+            "tool": "system",
+            "input": "sufficiency_check_failed",
+            "output": "The information gathered so far is NOT enough. "
+                      "Try different search queries, alternative tools, "
+                      "or rephrase your approach to find the answer.",
+        })
+
+        # Resume the reasoning loop
+        while step < MAX_STEPS:
+            step += 1
+            prompt = DECISION_PROMPT.format(
+                context=json.dumps(context, indent=2, default=str),
+                question=question,
+                step=step,
+                max_steps=MAX_STEPS,
+            )
+            try:
+                decision = ask_llm(prompt)
+            except ValueError:
+                try:
+                    decision = ask_llm(prompt)
+                except ValueError:
+                    break
+
+            if decision.get("type") == "final":
+                break
+
+            if decision.get("type") == "tool":
+                tool_name = decision.get("tool", "")
+                tool_input = decision.get("input", "")
+                tool_output = _call_tool(tool_name, tool_input)
+                context.append({
+                    "step": step,
+                    "tool": tool_name,
+                    "input": tool_input,
+                    "output": tool_output,
+                })
+            else:
+                break
 
     # ── Generate final answer ───────────────────────────────────────────
     answer_prompt = ANSWER_PROMPT.format(
