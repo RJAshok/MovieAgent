@@ -7,6 +7,23 @@
 - **Data Validation**: `pydantic` for MCP-compliant schema validation and I/O governance.
 - **Math Ops**: `numpy` for float32 array processing.
 
+## Quickstart
+
+1. **Setup**: Run the setup script to initialize a local virtual environment (`venv`), install Python dependencies, generate a template `.env` file, download the embedding model, and automatically ingest any unstructured text from `dataset/unstructured/` into the FAISS vector database.
+   ```bash
+   python setup.py
+   ```
+2. **Configure Environment**: Update the newly created `.env` file with your valid `TAVILY_API_KEY` and `GEMINI_API_KEY`.
+3. **Run the Agent**: Activate the virtual environment and start the interactive agent interface. `run.py` will automatically prompt you to upload structured CSV data if the SQLite database is empty.
+   ```bash
+   # Windows
+   venv\Scripts\activate
+   # Mac/Linux
+   source venv/bin/activate
+   
+   python run.py
+   ```
+
 ## Selected Corpus
 ```text
 Option C - Movies Corpus 
