@@ -120,22 +120,6 @@ def check_and_ingest_structured():
                 print("Error: The path provided is not a valid .csv file. Try again.")
                 continue
             
-            # Verify schema
-            try:
-                import pandas as pd
-                df = pd.read_csv(fp)
-                expected_cols = {'id', 'title', 'budget', 'revenue', 'rating'}
-                actual_cols = {str(c).strip().lower() for c in df.columns}
-                if not expected_cols.issubset(actual_cols):
-                    print(f"Error: The .csv file schema does not match the database.")
-                    print(f"Expected columns to include (case-insensitive): {expected_cols}")
-                    print(f"Found columns: {actual_cols}")
-                    print("Please fix your CSV and try again.")
-                    continue
-            except Exception as e:
-                print(f"Error reading the CSV file: {e}")
-                continue
-                
             dest = csv_folder / fp.name
             shutil.copy2(fp, dest)
             print(f"Copied {fp.name} to {dest}.")
