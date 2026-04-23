@@ -11,10 +11,10 @@ def main():
     # 1. Create Virtual Environment
     venv_dir = "venv"
     if not os.path.exists(venv_dir):
-        print(f"\n[1/4] Creating virtual environment '{venv_dir}'...")
+        print(f"\n[1/5] Creating virtual environment '{venv_dir}'...")
         venv.create(venv_dir, with_pip=True)
     else:
-        print(f"\n[1/4] Virtual environment '{venv_dir}' already exists.")
+        print(f"\n[1/5] Virtual environment '{venv_dir}' already exists.")
 
     # Determine the venv python executable
     if sys.platform == "win32":
@@ -29,7 +29,7 @@ def main():
     # 2. Install python libraries
     req_file = "requirements.txt"
     if os.path.exists(req_file):
-        print(f"\n[2/4] Installing dependencies from {req_file} into '{venv_dir}'...")
+        print(f"\n[2/5] Installing dependencies from {req_file} into '{venv_dir}'...")
         try:
             subprocess.check_call([venv_python, "-m", "pip", "install", "-r", req_file])
             print("Dependencies installed successfully.")
@@ -37,11 +37,11 @@ def main():
             print(f"Error installing dependencies: {e}")
             sys.exit(1)
     else:
-        print(f"\n[2/4] Warning: {req_file} not found. Skipping dependency installation.")
+        print(f"\n[2/5] Warning: {req_file} not found. Skipping dependency installation.")
 
     # 3. Setup .env file
     env_file = ".env"
-    print(f"\n[3/4] Setting up {env_file} file...")
+    print(f"\n[3/5] Setting up {env_file} file...")
     if not os.path.exists(env_file):
         with open(env_file, "w") as f:
             f.write('TAVILY_API_KEY="your_tavily_api_key_here"\n')
@@ -51,7 +51,7 @@ def main():
         print(f"{env_file} already exists. Skipping creation to avoid overwriting your keys.")
 
     # 4. Download the embedding model
-    print("\n[4/4] Downloading the embedding model (all-MiniLM-L6-v2)...")
+    print("\n[4/5] Downloading the embedding model (all-MiniLM-L6-v2)...")
     
     # We must run this using the venv's python because sentence_transformers is installed there
     download_script = (
@@ -68,6 +68,24 @@ def main():
     except subprocess.CalledProcessError as e:
         print(f"Error executing model download script: {e}")
 
+    # 5. Ingest unstructured data
+    print("\n[5/5] Ingesting unstructured data from dataset/unstructured...")
+    unstructured_dir = os.path.join("dataset", "unstructured")
+    
+    if os.path.exists(unstructured_dir):
+        txt_files = [os.path.join(unstructured_dir, f) for f in os.listdir(unstructured_dir) if f.endswith('.txt')]
+        if txt_files:
+            try:
+                ingest_args = [venv_python, "-m", "tools.ingest.ingest"] + txt_files
+                subprocess.check_call(ingest_args)
+                print("Unstructured data ingested successfully.")
+            except subprocess.CalledProcessError as e:
+                print(f"Error ingesting unstructured data: {e}")
+        else:
+            print("No .txt files found in dataset/unstructured.")
+    else:
+        print("Directory dataset/unstructured not found. Skipping ingestion.")
+
     print("\n========================================")
     print(" Setup Complete! ")
     print("========================================")
@@ -77,7 +95,7 @@ def main():
     else:
         print(f"1. Activate the virtual environment: source {venv_dir}/bin/activate")
     print("2. Update the .env file with your valid API keys.")
-    print("3. Run the ingestion tool to build the FAISS index if you haven't.")
+    print("3. Run python run.py to start the agent!")
 
 if __name__ == "__main__":
     main()
