@@ -2,7 +2,15 @@ import os
 import sys
 import json
 import shutil
+import logging
+import warnings
 from pathlib import Path
+
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TQDM_DISABLE"] = "1"
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", module="google.generativeai")
+logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
 
 # Ensure the root directory is in sys.path
 _PROJECT_ROOT = Path(__file__).resolve().parent
@@ -34,16 +42,6 @@ def check_env_keys():
         print("Error: GEMINI_API_KEY is missing or invalid in the .env file.")
         sys.exit(1)
 
-def load_embedding_model():
-    """Load the embedding model to ensure it is downloaded."""
-    print("Loading embedding model, please wait...")
-    try:
-        from sentence_transformers import SentenceTransformer
-        SentenceTransformer('all-MiniLM-L6-v2')
-        print("Embedding model loaded successfully.")
-    except Exception as e:
-        print(f"Error loading embedding model: {e}")
-        sys.exit(1)
 
 def check_and_ingest_unstructured():
     """Check if FAISS vector store is empty and prompt for data ingestion."""
@@ -102,8 +100,9 @@ def check_and_ingest_structured():
     db_path = _PROJECT_ROOT / "tools" / "query_data" / "sample_movies.db"
     csv_folder = _PROJECT_ROOT / "dataset" / "structured"
     
-    is_empty = not db_path.exists()
     csv_folder.mkdir(parents=True, exist_ok=True)
+    csv_files = list(csv_folder.glob("*.csv"))
+    is_empty = len(csv_files) == 0
     
     while True:
         if is_empty:
@@ -182,7 +181,6 @@ def interactive_loop():
 def main():
     check_venv()
     check_env_keys()
-    load_embedding_model()
     check_and_ingest_unstructured()
     check_and_ingest_structured()
     interactive_loop()
