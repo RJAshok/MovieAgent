@@ -27,8 +27,8 @@ before using web_search.
   ALWAYS try this FIRST for any question about a movie's content or reviews.
 
 **Priority 2 — query_data** (SQL query over local SQLite database)
-  Use for: ratings, budgets, revenue, rankings, numerical comparisons.
-  The database has a table `movies` with columns: id, title, budget, revenue, rating.
+  Use for: rotten tomatoes scores, budgets, worldwide gross, opening weekend, rankings, numerical comparisons.
+  The database has a table `movies` with columns: id, movie_name, budget, opening_weekend, worldwide_gross, rotten_tomatoes_score.
   There may also be CSV-derived tables.  Your input MUST be a valid SQL SELECT query.
   ALWAYS try this for any question involving numbers or structured data about movies.
 

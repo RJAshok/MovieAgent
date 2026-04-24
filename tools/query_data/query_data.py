@@ -20,20 +20,13 @@ def _init_db():
         cursor.execute('''
             CREATE TABLE movies (
                 id INTEGER PRIMARY KEY,
-                title TEXT,
-                budget REAL,
-                revenue REAL,
-                rating REAL
+                movie_name TEXT,
+                budget INTEGER,
+                opening_weekend INTEGER,
+                worldwide_gross INTEGER,
+                rotten_tomatoes_score INTEGER
             )
         ''')
-        sample_data = [
-            (1, 'Inception', 160000000, 825532764, 8.8),
-            (2, 'The Dark Knight', 185000000, 1004558444, 9.0),
-            (3, 'Avatar', 237000000, 2787965087, 7.8),
-            (4, 'Pulp Fiction', 8000000, 213928762, 8.9),
-            (5, 'The Matrix', 63000000, 463517383, 8.7)
-        ]
-        cursor.executemany('INSERT INTO movies VALUES (?, ?, ?, ?, ?)', sample_data)
         conn.commit()
         conn.close()
 
@@ -63,8 +56,11 @@ def _init_db():
                 df.columns = [str(col).strip().replace(' ', '_').replace('-', '_') for col in df.columns]
                 
                 table_name = os.path.splitext(os.path.basename(csv_file))[0]
-                # If table already exists, this replaces it to prevent duplicates
-                df.to_sql(table_name, _MEM_CONN, if_exists='replace', index=False)
+                if table_name.lower() == 'movie':
+                    table_name = 'movies'
+                
+                # If table already exists, append to combine disk data and CSV data
+                df.to_sql(table_name, _MEM_CONN, if_exists='append', index=False)
             except Exception as e:
                 print(f"Error loading CSV {csv_file}: {e}")
 
@@ -76,7 +72,7 @@ def query_data(query: str) -> Dict[str, Any]:
     Query the structured datasets (both movies SQLite db and CSV files).
     
     WHEN TO USE:
-    - Use this tool when you need numerical or tabular information about movies (e.g., budget, revenue, ratings).
+    - Use this tool when you need numerical or tabular information about movies (e.g., budget, worldwide gross, opening weekend, rotten tomatoes score).
     - Use this tool when the user asks analytical questions (e.g., "What is the highest grossing movie?").
     
     WHEN NOT TO USE:
