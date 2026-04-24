@@ -1,5 +1,9 @@
 # Prodapt Agent
 
+📖 **Documentation**
+- [Agent Design Document](design.md)
+- [Agent Evaluation Report](evaluation.md)
+
 ## Tech Stack
 - **Language**: Python 3.12+
 - **Vector Database**: FAISS (`faiss-cpu`) for fast, local in-memory semantic similarity search.
