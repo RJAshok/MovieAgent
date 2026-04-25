@@ -1,5 +1,7 @@
 # Prodapt Agent
 
+*This project was made with the help of Gemini 3.1 Pro (High) in Google Antigravity.*
+
 📖 **Documentation**
 - [Agent Design Document](design.md)
 - [Agent Evaluation Report](evaluation.md)
