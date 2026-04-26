@@ -106,6 +106,8 @@ Respond with STRICT JSON only.  No markdown, no explanation.
 ANSWER_PROMPT = """You are a helpful assistant.  Answer the user's question
 using ONLY the information provided in the context below.
 
+DO NOT ANSWER QUESTIONS UNRELATED TO MOVIES. GRACEFULLY REFUSE TO ANSWER.
+
 ### User question
 {question}
 
@@ -113,6 +115,7 @@ using ONLY the information provided in the context below.
 {context}
 
 ### Instructions
+- If the question is not related to movies, refuse to answer.
 - Write a clear, concise answer.
 - Include citations referencing the tool name and source.
 - If context contains document results, cite the source file and page.
