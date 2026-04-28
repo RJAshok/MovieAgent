@@ -103,15 +103,22 @@ def run_agent(question: str) -> str:
     current_tool_stats = {}
     total_start_time = time.time()
 
-    print(f"\n{'='*72}")
-    print(f"  AGENT TRACE")
-    print(f"{'='*72}")
-    print(f"\n  Question: {question}\n")
+    # ── ANSI Colors ──
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    BOLD = '\033[1m'
+    RESET = '\033[0m'
+
+    print(f"\n{BOLD}{'='*72}{RESET}")
+    print(f"  {BOLD}AGENT TRACE{RESET}")
+    print(f"{BOLD}{'='*72}{RESET}")
+    print(f"\n  {BOLD}Question:{RESET} {question}\n")
 
     def _print_live_step(st: int | str, t_name: str, t_input: str, t_output: dict | list | str):
-        print(f"  Step {st}:")
-        print(f"    Tool  : {t_name}")
-        print(f"    Input : {t_input}")
+        print(f"  {BOLD}Step {st}:{RESET}")
+        print(f"    Tool  : {CYAN}{t_name}{RESET}")
+        print(f"    Input : {YELLOW}{t_input}{RESET}")
         output_str = json.dumps(t_output, default=str)
         if len(output_str) > 300:
             output_str = output_str[:300] + "..."
@@ -307,16 +314,16 @@ def run_agent(question: str) -> str:
     save_telemetry(tel)
 
     # ── Print Final Answer and Stats ──
-    print(f"  Final Answer:\n")
+    print(f"  {BOLD}Final Answer:{RESET}\n")
     for line in final_answer.strip().split("\n"):
         print(f"    {line}")
     print(f"\n  Steps used: {len([c for c in context if c['tool'] != 'system'])}/{MAX_STEPS}")
     
     # ── Print Table ──
-    print(f"\n  [Telemetry & Statistics]")
+    print(f"\n  {BOLD}{CYAN}[Telemetry & Statistics]{RESET}")
     print(f"  Total Execution Time: {total_time:.2f}s")
     print(f"  {'-'*95}")
-    print(f"  | Component     | Calls (Cur/Cum) | Avg Latency (Cur/Cum) | Est. Tokens (Cur/Cum Avg) |")
+    print(f"  | {CYAN}{'Component':<13}{RESET} | {CYAN}{'Calls (Cur/Cum)':<15}{RESET} | {CYAN}{'Avg Latency (Cur/Cum)':<21}{RESET} | {CYAN}{'Est. Tokens (Cur/Cum Avg)':<25}{RESET} |")
     print(f"  |---------------|-----------------|-----------------------|---------------------------|")
     
     cum_queries = tel["queries"]
@@ -325,7 +332,7 @@ def run_agent(question: str) -> str:
     cum_llm_avg_lat = tel["llm"]["latency"] / tel["llm"]["count"] if tel["llm"]["count"] else 0
     cur_llm_avg_lat = current_llm_stats["latency"] / current_llm_stats["count"] if current_llm_stats["count"] else 0
     cum_llm_avg_tok = tel["llm"]["tokens"] / cum_queries if cum_queries else 0
-    print(f"  | LLM           | {current_llm_stats['count']:<2} / {tel['llm']['count']:<8} | {cur_llm_avg_lat:5.2f}s / {cum_llm_avg_lat:5.2f}s     | {current_llm_stats['tokens']:<6} / {cum_llm_avg_tok:<10.0f} |")
+    print(f"  | {BOLD}LLM{RESET}           | {current_llm_stats['count']:<2} / {tel['llm']['count']:<8} | {cur_llm_avg_lat:5.2f}s / {cum_llm_avg_lat:5.2f}s     | {current_llm_stats['tokens']:<6} / {cum_llm_avg_tok:<10.0f} |")
     
     # Tool Stats
     for tn in current_tool_stats.keys() | tel["tools"].keys():
@@ -338,7 +345,7 @@ def run_agent(question: str) -> str:
         cum_avg_tok = cum_stats["tokens"] / cum_queries if cum_queries else 0.0
         
         tn_display = tn[:13]
-        print(f"  | {tn_display:<13} | {c_stats['count']:<2} / {cum_stats['count']:<8} | {c_avg_lat:5.2f}s / {cum_avg_lat:5.2f}s     | {c_stats['tokens']:<6} / {cum_avg_tok:<10.0f} |")
+        print(f"  | {GREEN}{tn_display:<13}{RESET} | {c_stats['count']:<2} / {cum_stats['count']:<8} | {c_avg_lat:5.2f}s / {cum_avg_lat:5.2f}s     | {c_stats['tokens']:<6} / {cum_avg_tok:<10.0f} |")
         
     print(f"  {'-'*95}\n")
 

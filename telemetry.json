@@ -1,20 +1,25 @@
 {
-  "queries": 2,
+  "queries": 3,
   "llm": {
-    "count": 8,
-    "latency": 115.34361505508423,
-    "tokens": 5468
+    "count": 13,
+    "latency": 181.15007901191711,
+    "tokens": 11458
   },
   "tools": {
     "search_docs": {
-      "count": 1,
-      "latency": 5.910475254058838,
-      "tokens": 410
+      "count": 2,
+      "latency": 11.803988456726074,
+      "tokens": 873
     },
     "query_data": {
       "count": 1,
       "latency": 0.0015099048614501953,
       "tokens": 28
+    },
+    "web_search": {
+      "count": 1,
+      "latency": 2.1132919788360596,
+      "tokens": 219
     }
   }
 }
