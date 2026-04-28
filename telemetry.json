@@ -1,0 +1,20 @@
+{
+  "queries": 2,
+  "llm": {
+    "count": 8,
+    "latency": 115.34361505508423,
+    "tokens": 5468
+  },
+  "tools": {
+    "search_docs": {
+      "count": 1,
+      "latency": 5.910475254058838,
+      "tokens": 410
+    },
+    "query_data": {
+      "count": 1,
+      "latency": 0.0015099048614501953,
+      "tokens": 28
+    }
+  }
+}

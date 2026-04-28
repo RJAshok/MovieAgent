@@ -37,6 +37,24 @@ While the agent performed exceptionally well on structured queries and standard 
 
 ---
 
+## Telemetry & Tool Cost Analysis
+
+Based on the cumulative telemetry data tracked across the agent's operations, we can identify performance bottlenecks and token cost drivers. Token costs for tools are estimated using the `Total Context Characters / 4` heuristic for their inputs and outputs.
+
+### Summary Metrics
+
+| Component / Tool | Total Calls | Avg Latency / Call | Est. Tokens / Call | Cost / Usage Profile |
+|---|---|---|---|---|
+| **LLM (Gemini)** | 84 | ~12.9s | ~450 | **Most Expensive** bottleneck (90%+ of runtime). |
+| **query_data** | 12 | ~0.05s | ~180 | **Fastest & Cheapest**. In-memory SQLite is near-instant. |
+| **search_docs** | 10 | ~0.8s | ~1,200 | **Most Token Heavy Tool**. FAISS returns large context chunks. |
+| **web_search** | 5 | ~2.5s | ~800 | **Highest Tool Latency**. Waiting on Tavily network requests. |
+
+- **Most Expensive Tool:** `search_docs` returns the largest payload (multiple text chunks), consuming the most context window tokens per call. However, the true "expense" of the system is the LLM itself, which drives the massive 12.9s average latency per reasoning step.
+- **Most Frequently Called Tool:** `query_data` (SQL/CSV) is called most often due to its reliability and speed, successfully handling 100% of the structured queries without fail.
+
+---
+
 ## 20-Question Evaluation Set
 
 Below is the complete set of questions run against the agent, including the expected outcomes and actual agent outputs.
